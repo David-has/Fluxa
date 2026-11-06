@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxa – Aplicația care îți arată încotro merg banii</title>
+<meta name="description" content="Fluxa grupează automat cheltuielile, îți calculează economiile și te avertizează înainte să depășești bugetul.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+
+<header class="site-header" id="header">
+  <a class="brand" href="#top" aria-label="Fluxa, acasă">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 21C7 8 12 8 16 16s9 8 13-5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+    <span>Fluxa</span>
+  </a>
+  <nav class="nav" aria-label="Principal">
+    <a href="#functii">Funcții</a>
+    <a href="#grafic">Grafic</a>
+    <a href="#calculator">Calculator</a>
+    <a href="#preturi">Prețuri</a>
+    <a href="#intrebari">Întrebări</a>
+  </nav>
+  <div class="tools">
+    <button class="theme-btn" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Mod luminos">
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+    </button>
+    <a class="btn btn-sm" href="#descarca">Descarcă</a>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero" id="top">
+  <div class="bg" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grid"></div>
+    <canvas id="flow"></canvas>
+    <div class="spot"></div>
+  </div>
+
+  <div class="hero-copy">
+    <p class="badge"><i></i>Nou: alerte inteligente de buget</p>
+    <h1>
+      <span class="ln"><span>Vezi încotro merg</span></span>
+      <span class="ln"><span>banii tăi, înainte</span></span>
+      <span class="ln"><span>să plece.</span></span>
+    </h1>
+    <p class="lead">Fluxa grupează automat cheltuielile, îți arată cât poți economisi și te avertizează înainte să depășești bugetul. Fără foi de calcul.</p>
+    <div class="hero-actions">
+      <a class="btn mag" href="#calculator">Încearcă calculatorul</a>
+      <a class="btn btn-ghost" href="#preturi">Vezi prețurile</a>
+    </div>
+    <ul class="trust">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Fără reclame</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Date criptate</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Anulezi oricând</li>
+    </ul>
+  </div>
+
+  <div class="hero-visual">
+    <div class="chip c1">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" class="r-bg"/><circle cx="22" cy="22" r="18" class="r-fg" style="--o:31.7"/></svg>
+      <span><b>Mâncare</b><small>72% din buget</small></span>
+    </div>
+    <div class="hero-card" id="tilt">
+      <div class="hc-top"><span>Sold total</span><em class="up">+2,4% luna aceasta</em></div>
+      <div class="hc-amount"><b id="bal">24.318,40</b><small>lei</small></div>
+      <svg class="spark" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style="stop-color:var(--accent);stop-opacity:.35"/>
+            <stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/>
+          </linearGradient>
+        </defs>
+        <path id="sparkArea" fill="url(#sparkFill)"/>
+        <path id="sparkLine" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <ul class="feed" id="feed" aria-live="off"></ul>
+    </div>
+    <div class="chip c2">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" class="r-bg"/><circle cx="22" cy="22" r="18" class="r-fg alt" style="--o:36.2"/></svg>
+      <span><b>Vacanță</b><small>68% din obiectiv</small></span>
+    </div>
+  </div>
+</section>
+
+<div class="ticker" aria-label="Cursuri valutare, valori de exemplu"><div class="track" id="tickerTrack"></div></div>
+
+<section class="stats" aria-label="Cifre cheie">
+  <div><b data-count="1.2" data-dec="1" data-suf=" mil.">0</b><span>utilizatori activi</span></div>
+  <div><b data-count="4.8" data-dec="1">0</b><span>nota medie în magazine</span></div>
+  <div><b data-count="31" data-pre="−" data-suf="%">0</b><span>cheltuieli neplanificate</span></div>
+  <div><b data-count="2" data-suf=" min">0</b><span>până la primul raport</span></div>
+</section>
+
+<section class="section reveal" id="functii">
+  <h2>Tot ce faci cu banii, pe un singur ecran.</h2>
+  <div class="bento">
+    <article class="tile span2">
+      <h3>Categorii automate</h3>
+      <p>Fiecare tranzacție își găsește singură locul. Corectezi o dată, aplicația învață.</p>
+      <ul class="bars">
+        <li style="--w:78%;--k:var(--accent)"><span>Mâncare</span><i></i><b>38%</b></li>
+        <li style="--w:46%;--k:var(--accent2)"><span>Transport</span><i></i><b>22%</b></li>
+        <li style="--w:38%;--k:var(--good)"><span>Casă</span><i></i><b>18%</b></li>
+        <li style="--w:24%;--k:var(--mute)"><span>Distracție</span><i></i><b>12%</b></li>
+      </ul>
+    </article>
+    <article class="tile">
+      <h3>Obiective</h3>
+      <p>Pune bani deoparte pentru ce contează și vezi cum se umple progresul.</p>
+      <div class="ring-big">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="r-bg"/><circle cx="60" cy="60" r="50" class="r-fg" style="--o:100.5"/></svg>
+        <span><b>68%</b><small>3.400 / 5.000 lei</small></span>
+      </div>
+    </article>
+    <article class="tile">
+      <h3>Alerte de buget</h3>
+      <p>Te anunțăm când te apropii de limită, nu după ce ai depășit-o.</p>
+      <div class="toast">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.5-2.5V10a4.5 4.5 0 00-9 0v4.5zM10 20a2 2 0 004 0"/></svg>
+        <span><b>Restaurante: 90% din buget</b><small>Mai ai 62 lei până la 20 ale lunii</small></span>
+      </div>
+    </article>
+    <article class="tile">
+      <h3>Abonamente</h3>
+      <p>Toate plățile recurente într-un loc. Oprește-le cu un gest.</p>
+      <ul class="subs">
+        <li><span>Video</span><em>39 lei</em><button type="button" class="sw" role="switch" aria-checked="true" aria-label="Video, 39 lei" data-p="39"></button></li>
+        <li><span>Muzică</span><em>24 lei</em><button type="button" class="sw" role="switch" aria-checked="true" aria-label="Muzică, 24 lei" data-p="24"></button></li>
+        <li><span>Sală</span><em>149 lei</em><button type="button" class="sw" role="switch" aria-checked="true" aria-label="Sală, 149 lei" data-p="149"></button></li>
+      </ul>
+      <p class="sub-total">Total lunar: <b id="subTotal">212 lei</b></p>
+    </article>
+    <article class="tile span2 sec">
+      <svg class="shield" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z"/><path d="M17 24l5 5 9-10"/></svg>
+      <div>
+        <h3>Securitate fără compromisuri</h3>
+        <p>Date criptate, autentificare biometrică și acces doar în citire la contul tău bancar. Nu putem muta bani, iar tu poți șterge totul oricând.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section reveal" id="grafic">
+  <div class="split">
+    <div>
+      <h2>Cheltuielile tale, desenate.</h2>
+      <p class="sub">Trece cu mouse-ul peste grafic și vezi exact cât ai cheltuit în fiecare zi sau lună.</p>
+      <div class="range" role="group" aria-label="Perioadă">
+        <button type="button" data-range="week" aria-pressed="true">7 zile</button>
+        <button type="button" data-range="month" aria-pressed="false">30 de zile</button>
+        <button type="button" data-range="year" aria-pressed="false">12 luni</button>
+      </div>
+      <dl class="kpis">
+        <div><dt>Total cheltuit</dt><dd id="kSpent">0 lei</dd></div>
+        <div><dt id="kAvgLabel">Medie pe zi</dt><dd id="kAvg">0 lei</dd></div>
+        <div><dt>Cea mai mare cheltuială</dt><dd id="kPeak">0 lei</dd></div>
+      </dl>
+    </div>
+    <div class="chart" id="chartWrap">
+      <svg id="chartSvg" viewBox="0 0 640 340" role="img" aria-label="Grafic cu cheltuielile pe perioada aleasă"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="calculator">
+  <h2>Cât poți strânge în câțiva ani?</h2>
+  <div class="calc">
+    <div class="controls">
+      <div class="ctl"><label for="rMonthly">Economisești lunar<output id="oMonthly"></output></label><input id="rMonthly" type="range" min="100" max="5000" step="50" value="800"></div>
+      <div class="ctl"><label for="rInitial">Sumă de început<output id="oInitial"></output></label><input id="rInitial" type="range" min="0" max="50000" step="500" value="5000"></div>
+      <div class="ctl"><label for="rYears">Perioadă<output id="oYears"></output></label><input id="rYears" type="range" min="1" max="30" step="1" value="10"></div>
+      <div class="ctl"><label for="rRate">Randament anual estimat<output id="oRate"></output></label><input id="rRate" type="range" min="0" max="12" step="0.5" value="5"></div>
+      <p class="fine">Estimare orientativă, cu dobândă compusă lunar. Nu reprezintă o garanție de randament.</p>
+    </div>
+    <div class="results">
+      <div class="res-main"><span>Ai putea avea</span><b id="total">0 lei</b></div>
+      <div class="res-row">
+        <div><span>Din depunerile tale</span><b id="vPrin">0 lei</b></div>
+        <div><span>Din dobândă</span><b id="vInt">0 lei</b></div>
+      </div>
+      <svg id="growth" viewBox="0 0 560 220" role="img" aria-label="Evoluția economiilor pe ani"></svg>
+      <p class="legend"><i class="k1"></i>Depuneri<i class="k2"></i>Dobândă</p>
+      <div class="goal">
+        <label for="goal">Obiectiv, în lei</label>
+        <input id="goal" type="number" min="1000" step="500" value="25000">
+        <p id="goalText"></p>
+        <div class="meter"><i id="goalBar"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="preturi">
+  <h2>Începe gratuit. Plătești doar dacă vrei mai mult.</h2>
+  <button type="button" class="bill" id="billing" role="switch" aria-checked="false"><span>Lunar</span><i></i><span>Anual <em>−20%</em></span></button>
+  <div class="plans">
+    <article class="plan">
+      <h3>Gratuit</h3>
+      <p class="price"><b data-m="0" data-y="0">0</b> lei<small>/lună</small></p>
+      <ul>
+        <li>Un cont bancar</li>
+        <li>Categorii automate</li>
+        <li>Trei obiective</li>
+        <li>Grafice lunare</li>
+      </ul>
+      <a class="btn btn-ghost" href="#descarca">Începe gratuit</a>
+    </article>
+    <article class="plan pro">
+      <span class="tag">Cel mai ales</span>
+      <h3>Plus</h3>
+      <p class="price"><b data-m="19" data-y="15">19</b> lei<small>/lună</small></p>
+      <ul>
+        <li>Conturi nelimitate</li>
+        <li>Alerte de buget</li>
+        <li>Istoric pe 10 ani</li>
+        <li>Export CSV și PDF</li>
+      </ul>
+      <a class="btn" href="#descarca">Alege Plus</a>
+    </article>
+    <article class="plan">
+      <h3>Familie</h3>
+      <p class="price"><b data-m="39" data-y="31">39</b> lei<small>/lună</small></p>
+      <ul>
+        <li>Până la 5 persoane</li>
+        <li>Bugete comune</li>
+        <li>Obiective comune</li>
+        <li>Suport prioritar</li>
+      </ul>
+      <a class="btn btn-ghost" href="#descarca">Alege Familie</a>
+    </article>
+  </div>
+</section>
+
+<section class="section reveal" id="intrebari">
+  <h2>Întrebări frecvente</h2>
+  <div class="faq">
+    <div class="qa">
+      <button type="button" aria-expanded="false" aria-controls="a1" id="q1">Se conectează aplicația la banca mea?</button>
+      <div class="ans" id="a1" role="region" aria-labelledby="q1"><div><p>Da, prin conexiuni bancare oficiale, cu acces doar în citire. Nu putem muta bani și nu vedem parola ta bancară.</p></div></div>
+    </div>
+    <div class="qa">
+      <button type="button" aria-expanded="false" aria-controls="a2" id="q2">Cât costă versiunea gratuită?</button>
+      <div class="ans" id="a2" role="region" aria-labelledby="q2"><div><p>Nimic. Versiunea gratuită nu are limită de timp și nici reclame.</p></div></div>
+    </div>
+    <div class="qa">
+      <button type="button" aria-expanded="false" aria-controls="a3" id="q3">Pot să-mi export datele?</button>
+      <div class="ans" id="a3" role="region" aria-labelledby="q3"><div><p>Oricând, în CSV sau PDF. La cerere, ștergem complet contul și datele asociate.</p></div></div>
+    </div>
+    <div class="qa">
+      <button type="button" aria-expanded="false" aria-controls="a4" id="q4">Funcționează și în alte monede?</button>
+      <div class="ans" id="a4" role="region" aria-labelledby="q4"><div><p>Da. Urmărești conturi în lei, euro și dolari, cu conversie la cursul zilei.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section cta-wrap reveal" id="descarca">
+  <div class="cta">
+    <h2>Primul pas durează două minute.</h2>
+    <p>Descarcă Fluxa, conectează un cont și primești primul raport chiar în prima zi.</p>
+    <div class="stores">
+      <a class="btn" href="#top">Descarcă pentru iOS</a>
+      <a class="btn btn-ghost" href="#top">Descarcă pentru Android</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer"><span>Fluxa</span><p>© 2026 Fluxa. Prezentare conceptuală, cifrele sunt exemple.</p></footer>
+</body>
+</html>
